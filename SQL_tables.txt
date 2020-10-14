@@ -1,0 +1,75 @@
+create table task (
+id serial primary key,
+parent_id integer,
+name varchar(45) not null unique,
+importance integer default 2,
+date timestamp,
+status integer default 0,
+employee_id integer,
+FOREIGN KEY (parent_id) REFERENCES task (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE);
+
+create table description (
+id serial primary key,
+task_id integer not null unique,
+target text,
+result text,
+FOREIGN KEY (task_id) REFERENCES task (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE);
+    
+create table app_user (
+id serial primary key,
+username varchar(50) not null unique,
+password varchar(255) not null);
+
+create table app_role (
+id integer not null unique,
+role_name varchar(50) not null);
+
+create table app_user_roles (
+id bigserial primary key,
+users_id integer not null,
+roles_id integer not null,
+FOREIGN KEY (users_id) REFERENCES app_user (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+FOREIGN KEY (roles_id) REFERENCES app_role (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE);
+    
+INSERT INTO app_role VALUES (1, 'ROLE_USER'), (2, 'ROLE_ADMIN');
+
+create table employee (
+id serial primary key,
+task_id integer not null unique,
+app_user_id integer not null,
+FOREIGN KEY (app_user_id) REFERENCES app_user (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+FOREIGN KEY (task_id) REFERENCES task (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE);
+
+create table task_watchers (
+id bigserial primary key,
+task_id integer not null,
+employee_id integer not null,
+FOREIGN KEY (task_id) REFERENCES task (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+FOREIGN KEY (employee_id) REFERENCES employee (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE);
+    
+create table task_supervisor (
+id serial primary key,
+task_id integer not null,
+supervisor_id integer,
+FOREIGN KEY (task_id) REFERENCES task (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+FOREIGN KEY (supervisor_id) REFERENCES employee (id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE);

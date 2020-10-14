@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset="UTF-8">
+      <title>Регистрация нового пользователя</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <link data-th-href="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
+   </head>
+   <body>
+      <div>
+         <form action="registration" method="post">
+            <h2>Заполните поля для регистрации</h2>
+            <span data-th-text="${registrationError}" style="color: red"></span>
+            <fieldset class="form-group">
+               <label for="username">Логин:</label>
+               <input type="text" class="form-control" id="username" name="username" required maxlength="45">
+            </fieldset>
+            <fieldset class="form-group">
+               <label for="password">Пароль:</label>
+               <input type="password" class="form-control" id="password" name="password" required maxlength="45">
+            </fieldset>
+            <fieldset class="form-group">
+               <label for="passwordConfirm">Повторите пароль:</label>
+               <input type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" required maxlength="45">
+            </fieldset>
+            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+         </form>
+      </div>
+   </body>
+</html>

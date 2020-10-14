@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <title>Планирование Ваших задач</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    
+    <link data-th-href="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css}" rel="stylesheet" media="screen"/>
+    <link data-th-href="@{//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css}" rel="stylesheet"/>
+    <link data-th-href="@{/Pages.css}" type="text/css" rel="stylesheet"/>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
+         
+    <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment-with-locales.min.js"></script>
+  </head>
+  <body>  
+   <div class="row">
+    <div class="col-12">
+       <fieldset class="form-group">
+          <div class="d-flex flex-row align-items-center">
+             <a href="/">Вернуться в главное меню</a>
+             <div data-sec-authorize="isAuthenticated()" class="ml-auto">
+                Вы вошли как пользователь <span data-sec-authentication="name"></span>&nbsp;&nbsp;&nbsp;
+             </div>
+             <div data-sec-authorize="isAuthenticated()">
+                <a href="/logout">Выйти</a>
+             </div>
+             <div data-sec-authorize="!isAuthenticated()" class="ml-auto">
+                <a href="/login">Войти</a>
+             </div>
+          </div>
+       </fieldset>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-3 first-panel">
+       <div class="row">
+          <div class="col-12">
+             <h2>ЗАДАЧИ</h2>
+          </div>
+       </div>
+       <div class="row main_list">
+          <div class="col-12">          
+             <div data-th-each="task : ${firstTasksList}" class="task">
+                <form  action="menu" method="post">
+                   <button type="submit" data-th-value="${task.id}" name="t" class="list-group-item d-flex justify-content-between list-group-item-action align-items-center" data-th-disabled="${task==selectedTask} ? 'disabled'" data-th-style="${task==selectedTask} ? 'font-weight: 600;'">
+                      [[${task.name}]]
+                      <span data-th-if="${task.date!=null and task.date.before(T(java.util.Calendar).getInstance()) and task.status==T(com.project.org.data.other.Status).INPROGRESS}" class="glyphicon glyphicon-time ml-auto" style="font-size: 17px; color: red"></span>
+                      <span data-th-unless="${task.date!=null and task.date.before(T(java.util.Calendar).getInstance()) and task.status==T(com.project.org.data.other.Status).INPROGRESS}" class="ml-auto"></span>
+                      <img data-th-if="${task.importance==T(com.project.org.data.other.Importance).BOTTOM}" data-th-src="@{/images/star_bottom.png}" width="27" height="20">
+                      <img data-th-if="${task.importance==T(com.project.org.data.other.Importance).LOW}" data-th-src="@{/images/star_low.png}" width="27" height="20">
+                      <img data-th-if="${task.importance==T(com.project.org.data.other.Importance).MID or task.importance==null}" data-th-src="@{/images/star_mid.png}" width="27" height="20">
+                      <img data-th-if="${task.importance==T(com.project.org.data.other.Importance).HIGH}" data-th-src="@{/images/star_high.png}" width="27" height="20">
+                      <img data-th-if="${task.importance==T(com.project.org.data.other.Importance).TOP}" data-th-src="@{/images/star_top.png}" width="27" height="20">
+                      <span data-th-if="${task.status==T(com.project.org.data.other.Status).COMPLETED}" class="glyphicon glyphicon-ok" style="font-size: 17px; color: green"></span>  
+                      <span data-th-if="${task.status==T(com.project.org.data.other.Status).FAILED}" class="glyphicon glyphicon-remove" style="font-size: 17px; color: red"></span> 
+                      <span data-th-if="${task.status==T(com.project.org.data.other.Status).INPROGRESS or task.status==null}" class="glyphicon glyphicon-question-sign" style="font-size: 17px; color: gold"></span>             
+                   </button>
+                </form>
+             </div>             
+          </div>
+       </div>
+       <div class="row">
+          <div class="col-12">
+             <button class="btn btn-success" type="button" data-toggle="modal" data-target="#AddTask">Создать новую задачу</button>
+          </div>
+          <div class="modal fade" id="AddTask" tabindex="-1" role="dialog" aria-labelledby="modalAddTask" aria-hidden="true">
+             <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                   <div class="modal-header">
+                      <h4 class="modal-title" id="modalAddTask">Создание новой задачи</h4>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                         <span aria-hidden="true">&times;</span>
+                      </button>
+                   </div>                   
+                   <form action="add" method="post">
+                      <fieldset class="form-group">
+                         <label for="name">Название</label>
+                         <input type="text" class="form-control" id="name" name="name" required maxlength="23">
+                      </fieldset>
+                      <fieldset class="form-group">
+                         <label for="date">Срок исполнения (необязательно)</label>
+                         <div class="input-group date" id="datetimepicker2" data-target-input="nearest">
+                            <input type="datetime" class="form-control datetimepicker-input" data-target="#datetimepicker2" id="date" name="date"/>
+                            <div class="input-group-append" data-target="#datetimepicker2" data-toggle="datetimepicker">
+                               <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                         </div>
+                         <script type="text/javascript">
+                            $(function () {
+                                $('#datetimepicker2').datetimepicker({
+                                    locale: 'ru'
+                                });
+                            });
+                         </script>
+                      </fieldset>
+                      <fieldset class="form-group">
+                         <label for="importance">Приоритет</label>
+                         <div class="importance_block" align="center">
+                            <input name="importance" value="TOP" id="importance_5" type="radio" />
+                            <label for="importance_5" class="label_importance" title="наивысший"></label> 
+                            <input name="importance" value="HIGH" id="importance_4" type="radio" />
+                            <label for="importance_4" class="label_importance" title="высокий"></label> 
+                            <input name="importance" value="MID" id="importance_3" type="radio" checked/>
+                            <label for="importance_3" class="label_importance" title="средний"></label> 
+                            <input name="importance" value="LOW" id="importance_2" type="radio" />
+                            <label for="importance_2" class="label_importance" title="низкий"></label> 
+                            <input name="importance" value="BOTTOM" id="importance_1" type="radio" />
+                            <label for="importance_1" class="label_importance" title="самый низкий"></label>
+                         </div>
+                      </fieldset>
+                      <button type="submit" class="btn btn-primary">Создать</button>
+                   </form>
+                </div>
+             </div>
+          </div>          
+       </div>
+    </div>
+    <div class="main_window col-9" data-th-if="${selectedTask}">
+       <div class="row">
+          <div class="col-12">
+             <form  action="menu" method="post">
+                <h2>
+                   <button data-th-if="${selectedTask.parentId}" class="btn btn-success" type="submit" data-th-value="${selectedTask.parentId}" name="t" style="margin-right: 15px">
+                      <img data-th-src="@{/images/level_up.png}"/>
+                   </button>
+                   [[${selectedTask.name}]]
+                </h2>
+             </form>
+          </div>
+       </div>
+       <div class="row">
+          <div class="fpanel col-12 d-flex align-items-center">
+             <span class="mpanel" data-th-if="${selectedTask.date!=null and selectedTask.status==T(com.project.org.data.other.Status).INPROGRESS}">
+                срок исполнения:
+                <span data-th-style="${selectedTask.date.before(T(java.util.Calendar).getInstance())} ? 'color: red'">
+                   <i>[[${SimpleDateFormat.format(selectedTask.getDate().getTime())}]]</i>
+                </span> 
+             </span>
+             <div class="mpanel" data-th-switch="${selectedTask.status}">
+                <span data-th-case="${T(com.project.org.data.other.Status).INPROGRESS}">
+                   статус: <i>в работе</i>
+                   <span class="glyphicon glyphicon-question-sign" style="color: gold"></span>
+                </span>
+                <span data-th-case="${T(com.project.org.data.other.Status).COMPLETED}">
+                   статус: <i>завершено</i>
+                   <span class="glyphicon glyphicon-ok" style="color: green"></span>
+                </span>
+                <span data-th-case="${T(com.project.org.data.other.Status).FAILED}">
+                   статус: <i>отменено</i>
+                   <span class="glyphicon glyphicon-remove" style="color: red"></span>
+                </span>
+             </div>
+             <div class="mpanel" data-th-switch="${selectedTask.importance}">
+                приоритет:
+                <img data-th-case="${T(com.project.org.data.other.Importance).BOTTOM}" data-th-src="@{/images/star2_bottom.png}" width="9" height="9" title="самый низкий">
+                <img data-th-case="${T(com.project.org.data.other.Importance).LOW}" data-th-src="@{/images/star2_low.png}" width="18" height="9" title="низкий">
+                <img data-th-case="${T(com.project.org.data.other.Importance).MID}" data-th-src="@{/images/star2_mid.png}" width="27" height="9" title="средний">
+                <img data-th-case="${T(com.project.org.data.other.Importance).HIGH}" data-th-src="@{/images/star2_high.png}" width="36" height="9" title="высокий">
+                <img data-th-case="${T(com.project.org.data.other.Importance).TOP}" data-th-src="@{/images/star2_top.png}" width="45" height="9" title="наивысший">
+             </div>
+             <div class="ml-auto">
+                <button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#edit">редактировать</button>
+                <div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="modalEdit" aria-hidden="true">
+                   <div class="modal-dialog modal-sm">
+                      <div class="modal-content">
+                         <div class="modal-header">
+                            <h4 class="modal-title" id="modalEdit">Редактировать</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                               <span aria-hidden="true">&times;</span>
+                            </button>
+                         </div>
+                         <form action="edit" method="post">
+                            <fieldset class="form-group">
+                               <label for="name">Название</label>
+                               <input type="text" class="form-control" id="name" name="name" required maxlength="23" data-th-value="${selectedTask.name}">
+                            </fieldset>
+                            <fieldset class="form-group">
+                               <label for="date">Срок исполнения (необязательно)</label>
+                               <div class="input-group date" id="datetimepicker3" data-target-input="nearest">
+                                  <input type="datetime" class="form-control datetimepicker-input" data-target="#datetimepicker3" id="date" name="date" data-th-value="${selectedTask.Date != null} ? ${DateFormatForEdit.format(selectedTask.getDate().getTime())}"/>
+                                  <div class="input-group-append" data-target="#datetimepicker3" data-toggle="datetimepicker">
+                                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                  </div>
+                               </div>
+                               <script type="text/javascript">
+                                  $(function () {
+                                      $('#datetimepicker3').datetimepicker({
+                                          locale: 'ru'
+                                      });
+                                  });
+                               </script>
+                            </fieldset>
+                            <fieldset class="form-group">
+                               <label for="importance">Приоритет</label>
+                               <div class="importance_block" align="center">
+                                  <input name="importance" value="TOP" id="importance_top" type="radio" data-th-attr="checked=${selectedTask.importance==T(com.project.org.data.other.Importance).TOP} ? 'checked' : null"/>
+                                  <label for="importance_top" class="label_importance" title="наивысший"></label> 
+                                  <input name="importance" value="HIGH" id="importance_high" type="radio" data-th-attr="checked=${selectedTask.importance==T(com.project.org.data.other.Importance).HIGH} ? 'checked' : null"/>
+                                  <label for="importance_high" class="label_importance" title="высокий"></label> 
+                                  <input name="importance" value="MID" id="importance_mid" type="radio" data-th-attr="checked=${selectedTask.importance==T(com.project.org.data.other.Importance).MID} ? 'checked' : null"/>
+                                  <label for="importance_mid" class="label_importance" title="средний"></label> 
+                                  <input name="importance" value="LOW" id="importance_low" type="radio" data-th-attr="checked=${selectedTask.importance==T(com.project.org.data.other.Importance).LOW} ? 'checked' : null"/>
+                                  <label for="importance_low" class="label_importance" title="низкий"></label> 
+                                  <input name="importance" value="BOTTOM" id="importance_bottom" type="radio" data-th-attr="checked=${selectedTask.importance==T(com.project.org.data.other.Importance).BOTTOM} ? 'checked' : null"/>
+                                  <label for="importance_bottom" class="label_importance" title="самый низкий"></label>
+                               </div>
+                            </fieldset>
+                            <fieldset class="form-group">
+                               <label for="status">Статус</label>
+                               <div class="status_block">
+                                  <input class="input_radio_status" name="status" value="COMPLETED" id="status_COMPLETED" type="radio" data-th-attr="checked=${selectedTask.status==T(com.project.org.data.other.Status).COMPLETED} ? 'checked' : null"/>
+                                  <label class="status_radio glyphicon glyphicon-ok" style="color: green" for="status_COMPLETED" title="завершено"></label>
+                                  <input class="input_radio_status" name="status" value="INPROGRESS" id="status_INPROGRESS" type="radio" data-th-attr="checked=${selectedTask.status==T(com.project.org.data.other.Status).INPROGRESS} ? 'checked' : null"/>
+                                  <label class="status_radio glyphicon glyphicon-question-sign" style="color: gold" for="status_INPROGRESS" title="в работе"></label>
+                                  <input class="input_radio_status" name="status" value="FAILED" id="status_FAILED" type="radio" data-th-attr="checked=${selectedTask.status==T(com.project.org.data.other.Status).FAILED} ? 'checked' : null"/>
+                                  <label class="status_radio glyphicon glyphicon-remove" style="color: red" for="status_FAILED" title="отменено"></label>
+                               </div>
+                            </fieldset>
+                            <input id="selectedId" name="selectedId" type="hidden" data-th-value="${selectedTask.getId()}">
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                         </form>                   
+                      </div>   
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+       <div class="row">
+          <div class="col-12">
+             <fieldset>
+                <legend>
+                   Описание задачи
+                </legend>
+                <textarea data-th-if="${selectedTask.description}" data-th-text="${selectedTask.description.target}" style="width: 100%" readonly rows="10"></textarea>
+                <div class="d-flex flex-row-reverse">
+                   <button class="btn btn-outline-dark" type="button" data-toggle="modal" data-target="#target">Редактировать</button>
+                </div>
+                <div class="modal fade" id="target" tabindex="-1" role="dialog" aria-labelledby="modalTarget" aria-hidden="true">
+                   <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                         <div class="modal-header">
+                            <h4 class="modal-title" id="modalTarget">Описание задачи</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                               <span aria-hidden="true">&times;</span>
+                            </button>
+                         </div>
+                         <form action="target" method="post">
+                            <textarea class="form-control" name="target" rows="10" maxlength="500" tabindex="1" data-th-if="${selectedTask.description}" data-th-text="${selectedTask.description.target} ? ${selectedTask.description.target}"></textarea>
+                            <textarea class="form-control" name="target" rows="10" maxlength="500" tabindex="1" data-th-unless="${selectedTask.description}"></textarea>
+                            <input id="selectedId" name="selectedId" type="hidden" data-th-value="${selectedTask.getId()}">
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                         </form>
+                      </div>
+                   </div>
+                </div>                               
+             </fieldset>
+          </div>
+       </div>       
+       <div class="row">
+          <div class="col-12">
+             <fieldset>
+                <legend>
+                   Итоги
+                </legend>
+                <textarea data-th-if="${selectedTask.description}" data-th-text="${selectedTask.description.result}" style="width: 100%" readonly rows="10"></textarea>
+                <div class="d-flex flex-row-reverse">
+                   <button class="btn btn-outline-dark" type="button" data-toggle="modal" data-target="#result">Редактировать</button>
+                </div>
+                <div class="modal fade" id="result" tabindex="-1" role="dialog" aria-labelledby="modalResult" aria-hidden="true">
+                   <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                         <div class="modal-header">
+                            <h4 class="modal-title" id="modalResult">Итоги задачи</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                               <span aria-hidden="true">&times;</span>
+                            </button>
+                         </div>
+                         <form action="result" method="post">
+                            <textarea class="form-control" name="result" rows="10" maxlength="500" tabindex="1" data-th-if="${selectedTask.description}" data-th-text="${selectedTask.description.result} ? ${selectedTask.description.result}"></textarea>
+                            <textarea class="form-control" name="result" rows="10" maxlength="500" tabindex="1" data-th-unless="${selectedTask.description}"></textarea>
+                            <input id="selectedId" name="selectedId" type="hidden" data-th-value="${selectedTask.getId()}">
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                         </form>
+                      </div>
+                   </div>
+                </div>                               
+             </fieldset>
+          </div>
+       </div>       
+       <fieldset>
+          <div data-th-if="${childrensTasksList.size()>0}">
+             <div class="row">
+                <div class="col-12">
+                   <h2>Подзадачи</h2>   
+                </div>
+             </div>
+             <div class="row children_list">
+                <div class="col-12">
+                   <div data-th-each="childTask : ${childrensTasksList}" class="task">
+                      <form  action="menu" method="post">
+                         <button type="submit" data-th-value="${childTask.id}" name="t" class="list-group-item d-flex justify-content-between list-group-item-action align-items-center">
+                            [[${childTask.name}]]
+                            <span data-th-if="${childTask.date!=null and childTask.date.before(T(java.util.Calendar).getInstance()) and childTask.status==T(com.project.org.data.other.Status).INPROGRESS}" class="glyphicon glyphicon-time ml-auto" style="font-size: 17px; color: red"></span>
+                            <span data-th-unless="${childTask.date!=null and childTask.date.before(T(java.util.Calendar).getInstance()) and childTask.status==T(com.project.org.data.other.Status).INPROGRESS}" class="ml-auto"></span>
+                            <div data-th-switch="${childTask.importance}">
+                               <img data-th-case="${T(com.project.org.data.other.Importance).BOTTOM}" data-th-src="@{/images/star_bottom.png}" width="27" height="20">
+                               <img data-th-case="${T(com.project.org.data.other.Importance).LOW}" data-th-src="@{/images/star_low.png}" width="27" height="20">
+                               <img data-th-case="${T(com.project.org.data.other.Importance).MID}" data-th-src="@{/images/star_mid.png}" width="27" height="20">
+                               <img data-th-case="${T(com.project.org.data.other.Importance).HIGH}" data-th-src="@{/images/star_high.png}" width="27" height="20">
+                               <img data-th-case="${T(com.project.org.data.other.Importance).TOP}" data-th-src="@{/images/star_top.png}" width="27" height="20">
+                               <img data-th-case="null" data-th-src="@{/images/star_mid.png}" width="27" height="20">
+                            </div>
+                            <div data-th-switch="${childTask.status}">
+                               <span data-th-case="${T(com.project.org.data.other.Status).COMPLETED}" class="glyphicon glyphicon-ok" style="font-size: 17px; color: green"></span>  
+                               <span data-th-case="${T(com.project.org.data.other.Status).FAILED}" class="glyphicon glyphicon-remove" style="font-size: 17px; color: red"></span> 
+                               <span data-th-case="${T(com.project.org.data.other.Status).INPROGRESS}" class="glyphicon glyphicon-question-sign" style="font-size: 17px; color: gold"></span>
+                               <span data-th-case="null" class="glyphicon glyphicon-question-sign" style="font-size: 17px; color: gold"></span>
+                            </div>           
+                         </button>
+                      </form>
+                   </div>                   
+                </div>            
+             </div>             
+          </div>
+          <div class="row">
+             <div class="col-12">
+                <button class="btn btn-success" type="button" data-toggle="modal" data-target="#AddChildTask">Создать подзадачу</button>
+             </div>
+             <div class="modal fade" id="AddChildTask" tabindex="-1" role="dialog" aria-labelledby="modalAddChildTask" aria-hidden="true">
+                <div class="modal-dialog modal-sm">
+                   <div class="modal-content">
+                      <div class="modal-header">
+                         <h4 class="modal-title" id="modalAddChildTask">Создание новой подзадачи</h4>
+                         <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                            <span aria-hidden="true">&times;</span>
+                         </button>
+                      </div>                   
+                      <form action="add" method="post">
+                         <fieldset class="form-group">
+                            <label for="name">Название</label>
+                            <input type="text" class="form-control" id="name" name="name" required maxlength="23">
+                         </fieldset>
+                         <fieldset class="form-group">
+                            <label for="date">Срок исполнения (необязательно)</label>
+                            <div class="input-group date" id="datetimepicker4" data-target-input="nearest">
+                               <input type="datetime" class="form-control datetimepicker-input" data-target="#datetimepicker4" id="date" name="date"/>
+                               <div class="input-group-append" data-target="#datetimepicker4" data-toggle="datetimepicker">
+                                  <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                               </div>
+                            </div>
+                            <script type="text/javascript">
+                               $(function () {
+                            	   $('#datetimepicker4').datetimepicker({
+                            		   locale: 'ru'
+                            	   });
+                               });
+                            </script>
+                         </fieldset>
+                         <fieldset class="form-group">
+                            <label for="importance">Приоритет</label>
+                            <div class="importance_block" align="center">
+                               <input name="importance" value="TOP" id="importance_5_" type="radio" />
+                               <label for="importance_5_" class="label_importance" title="наивысший"></label> 
+                               <input name="importance" value="HIGH" id="importance_4_" type="radio" />
+                               <label for="importance_4_" class="label_importance" title="высокий"></label> 
+                               <input name="importance" value="MID" id="importance_3_" type="radio" checked/>
+                               <label for="importance_3_" class="label_importance" title="средний"></label> 
+                               <input name="importance" value="LOW" id="importance_2_" type="radio" />
+                               <label for="importance_2_" class="label_importance" title="низкий"></label> 
+                               <input name="importance" value="BOTTOM" id="importance_1_" type="radio" />
+                               <label for="importance_1_" class="label_importance" title="самый низкий"></label>
+                            </div>
+                         </fieldset>
+                         <input id="parentId" name="parentId" type="hidden" data-th-value="${selectedTask.getId()}">
+                         <button type="submit" class="btn btn-primary">Создать</button>
+                      </form>
+                   </div>
+                </div>                
+             </div>
+          </div>
+       </fieldset>
+       <div class="row">
+          <div class="col-12">
+             <div class="d-flex flex-row-reverse">
+                <button class="btn btn-danger" type="button" data-toggle="modal" data-target="#deleteTask">Удалить данную задачу</button>
+             </div>
+          </div>
+          <div class="modal fade" id="deleteTask" tabindex="-1" role="dialog" aria-labelledby="modalDeleteTask" aria-hidden="true">
+             <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                   <div class="modal-header">
+                      <h4 class="modal-title" id="modalDeleteTask">Вы действительно хотите удалить задачу "[[${selectedTask.name}]]"?</h4>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                         <span aria-hidden="true">&times;</span>
+                      </button>
+                   </div>
+                   <div class="d-flex justify-content-around">
+                      <form action="delete" method="post">                   
+                         <input id="deleteId" name="deleteId" type="hidden" data-th-value="${selectedTask.getId()}">
+                         <button type="submit" class="btn btn-danger">Удалить</button>
+                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                      </form>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </div>
+   </div>
+  </body>
+</html>
